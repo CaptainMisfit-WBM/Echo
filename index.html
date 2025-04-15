@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Echo Agent Interface</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .response {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      background: #f6f6f6;
+      padding: 15px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 Echo Agent</h1>
+  <p>Send a message to Echo and receive a vision-powered response.</p>
+
+  <textarea id="taskInput" placeholder="e.g. Read this Google Doc and summarize it..."></textarea>
+  <br>
+  <button onclick="sendToEcho()">Send to Echo</button>
+
+  <div id="responseBox" class="response"></div>
+
+  <script>
+    async function sendToEcho() {
+      const task = document.getElementById("taskInput").value;
+      const responseBox = document.getElementById("responseBox");
+      responseBox.textContent = "⏳ Processing...";
+
+      try {
+        const res = await fetch("https://echo-proxy-822697287981.us-central1.run.app/run-agent/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task: task,
+            use_vision: true
+          })
+        });
+
+        const data = await res.json();
+        if (data.response) {
+          responseBox.textContent = data.response;
+        } else if (data.error) {
+          responseBox.textContent = "❌ Error: " + (data.details || data.error);
+        } else {
+          responseBox.textContent = "⚠️ No response received.";
+        }
+      } catch (err) {
+        responseBox.textContent = "🚨 Network error: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
